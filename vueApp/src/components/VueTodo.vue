@@ -8,18 +8,30 @@
             v-if="!todos.length"
             v-bind:style="{ backgroundColor: tweenedCSSColor(0) }"
         >
-        Example
+            Example
+        </li>
+        <li
+            v-if="todos.length"
+        >
+            <input class="search-box" type="text"  placeholder="key to filter" @keyup="changeKey">
         </li>
         <li
             class="item"
-            v-for="(todo, index) in todos"
+            v-if="!filterTodos.length && todos.length"
+            v-bind:style="{ backgroundColor: tweenedCSSColor(0) }"
+        >
+            Nothing matched.
+        </li>
+        <li
+            class="item"
+            v-for="(todo, index) in filterTodos"
             v-bind:key="todo.id"
             v-bind:style="{ backgroundColor: tweenedCSSColor(todo.id) }">
-        {{ index + 1 }} . {{ todo.text }}
+            {{ index + 1 }} . {{ todo.text }}
             <input class="delete" type="button"  value="X" @click="removeItem(todo.id)">
         </li>
         <li>
-            <input class="add" type="text"  placeholder="Type And Enter" @keyup.enter="addItem">
+          <input class="add" type="text"  placeholder="Type And Enter" @keyup.enter="addItem">
         </li>
     </ul>
   </div>
@@ -31,7 +43,19 @@ export default {
   data () {
     return {
       msg: 'Welcome to Your Vue.js App -- To Do List.',
-      todos: []
+      todos: [],
+      searchkey: ''
+    }
+  },
+  computed: {
+    filterTodos: function () {
+      const originTodos = Object.assign(this.todos)
+      const keyWords = this.searchkey
+      const filterTodos = originTodos.filter(todo => {
+        return todo.text.indexOf(keyWords) !== -1
+      })
+      console.log(filterTodos)
+      return filterTodos
     }
   },
   methods: {
@@ -55,6 +79,10 @@ export default {
     removeItem: function (id) {
       const index = id - 1
       this.todos.splice(index, 1)
+    },
+    changeKey: function (event) {
+      this.searchkey = event.target.value
+      console.log(this.searchkey)
     }
   }
 }
@@ -83,6 +111,10 @@ li {
 }
 .add {
     width: calc(100% - 8px);
+}
+.search-box {
+    width: calc(100% - 8px);
+    margin-bottom: 10px;
 }
 .delete {
     float: right;
