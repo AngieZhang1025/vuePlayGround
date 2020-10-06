@@ -54,9 +54,15 @@ export default {
       const filterTodos = originTodos.filter(todo => {
         return todo.text.indexOf(keyWords) !== -1
       })
-      console.log(filterTodos)
       return filterTodos
     }
+  },
+  beforeMount: function () {
+    this.todos = JSON.parse(localStorage.getItem('todos'))
+  },
+  updated: function () {
+    localStorage.setItem('todos', JSON.stringify(this.todos))
+    console.log(this.todos)
   },
   methods: {
     addItem: function (event) {
@@ -82,7 +88,6 @@ export default {
     },
     changeKey: function (event) {
       this.searchkey = event.target.value
-      console.log(this.searchkey)
     }
   }
 }
