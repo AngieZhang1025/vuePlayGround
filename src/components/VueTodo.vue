@@ -1,7 +1,7 @@
 <template>
   <div class="todo">
     <!-- <h1>{{ msg }}</h1> -->
-    <h2>My Todos</h2>
+    <h2>My Todos (Created: {{ createdCount }} , Finished: {{ finishedCount }})</h2>
     <ul>
         <li
             class="item"
@@ -26,7 +26,10 @@
             class="item"
             v-for="(todo, index) in filterTodos"
             v-bind:key="todo.id"
-            v-bind:style="{ backgroundColor: tweenedCSSColor(todo.id) }">
+            v-bind:style="{ backgroundColor: tweenedCSSColor(todo.id)}"
+            v-bind:class="{ checkedItem : todo.checked }"
+            >
+            <input type="checkbox" id="checkbox" v-model="todo.checked" @change="checkItem($event)">
             {{ index + 1 }} . {{ todo.text }}
             <input class="delete" type="button"  value="X" @click="removeItem(todo.id)">
         </li>
@@ -55,23 +58,31 @@ export default {
         return todo.text.indexOf(keyWords) !== -1
       })
       return filterTodos
+    },
+    createdCount: function () {
+      return this.$store.state.createdCount
+    },
+    finishedCount: function () {
+      return this.$store.state.finishedCount
     }
   },
   beforeMount: function () {
-    this.todos = JSON.parse(localStorage.getItem('todos'))
+    this.todos = JSON.parse(localStorage.getItem('todos')) || []
   },
   updated: function () {
     localStorage.setItem('todos', JSON.stringify(this.todos))
-    console.log(this.todos)
   },
   methods: {
     addItem: function (event) {
       const newTodo = {
         id: this.todos.length + 1,
-        text: event.target.value
+        text: event.target.value,
+        checked: false
       }
       this.todos.push(newTodo)
       event.target.value = ''
+      this.$store.commit('createdCountIncrement')
+      localStorage.setItem('createdCount', this.$store.state.createdCount)
     },
     tweenedCSSColor: function (index) {
       const colors = [
@@ -85,6 +96,15 @@ export default {
     removeItem: function (id) {
       const index = id - 1
       this.todos.splice(index, 1)
+    },
+    checkItem: function (event) {
+      if (event.target.checked) {
+        this.$store.commit('finishedCountIncrement')
+        localStorage.setItem('finishedCount', this.$store.state.finishedCount)
+      } else {
+        this.$store.commit('finishedCountDecrement')
+        localStorage.setItem('finishedCount', this.$store.state.finishedCount)
+      }
     },
     changeKey: function (event) {
       this.searchkey = event.target.value
@@ -123,6 +143,9 @@ li {
 }
 .delete {
     float: right;
+}
+.checkedItem {
+  text-decoration: line-through;
 }
 a {
   color: #42b983;
